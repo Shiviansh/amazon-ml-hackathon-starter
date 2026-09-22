@@ -38,4 +38,4 @@ The pipeline uses the built-in Amazon profile defaults and expects raw CSV files
 
 ## Team collaboration
 
-Use branches for experiments and small, reviewable pull requests. Do not commit credentials, private datasets, cache files, model weights, or submissions. For teammates, add GitHub collaborators explicitly rather than making this repository public.
+Use branches for experiments and small, reviewable pull requests. Do not commit credentials, private datasets, cache files, model weights, or submissions. This repository is public: anyone can view, clone, and fork it. Add GitHub collaborators only when teammates need direct write access.
