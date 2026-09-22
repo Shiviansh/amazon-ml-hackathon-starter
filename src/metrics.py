@@ -133,13 +133,17 @@ def custom_log_smape_objective(
     *,
     soft_sign_delta: float = 0.05,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """First and second order gradients of SMAPE in log-space for tree boosting.
+    """SMAPE-inspired pseudo-gradient and positive curvature proxy for tree boosting.
 
     Let t = ln(1 + y), y_hat = ln(1 + y_pred), and residual Delta = y_hat - t.
     SMAPE(y, y_hat) = 2 * tanh(|Delta| / 2).
-    This function computes:
+    This function computes a smooth pseudo-gradient and a positive curvature
+    heuristic:
       g = tanh(Delta / soft_sign_delta) * sech^2(Delta / 2)
       h = sech^2(Delta / 2) + 1e-2
+    These are not exact, derivative-consistent first and second derivatives of
+    the official SMAPE objective. Compare the resulting model with the exact
+    ``smape`` metric on leakage-safe validation predictions.
     Outliers (|Delta| >> 0) naturally experience up to 95% gradient suppression,
     protecting decision tree splits from extreme target distortions.
     """

@@ -8,7 +8,7 @@ This is a toolkit, not a proven competition-winning solution. Metrics, GPU suppo
 
 1. Read [QUICKSTART.md](QUICKSTART.md) for setup, expected inputs, and the supported pipeline entry point.
 2. Read [TEAM_PROMPT.md](TEAM_PROMPT.md) before asking an LLM or teammate to modify or run the starter.
-3. Use [reports/AMAZON_ML_CHALLENGE_PODIUM_PLAYBOOK.md](reports/AMAZON_ML_CHALLENGE_PODIUM_PLAYBOOK.md) as background hypotheses only; independently verify its claims and sources before relying on them.
+3. Treat [the historical notes](reports/AMAZON_ML_CHALLENGE_PODIUM_PLAYBOOK.md) as limited, sourced context—not an official record or prediction.
 
 ## Main workflow
 
@@ -18,11 +18,12 @@ python src/pipeline.py --dataset amazon --device cpu --skip-images --run-dir run
 
 The pipeline uses the built-in Amazon profile defaults and expects raw CSV files under `data/raw/`. You can also provide `--train`, `--test`, and `--sample` paths. Start on CPU and add optional components only after you have a repeatable, leakage-safe validation baseline.
 
-## What the 18 core `src/` files do
+## What the core `src/` files do
 
 | File | Competition role |
 |---|---|
 | `pipeline.py` | Runs configured stages in dependency order, caches validated outputs, and finishes with submission validation. |
+| `prepare_challenge_data.py` | Strictly adapts the 2025-style `sample_id` / `catalog_content` / `image_link` / `price` CSVs to the canonical pipeline schema; it does not infer separate catalog fields. |
 | `audit.py` | Profiles schemas, missingness, duplicates, identifiers, target values, and train/test drift; writes diagnostic reports. |
 | `splits.py` | Builds deterministic K-fold, stratified, group-aware, stratified-group, or time-based folds. Choose grouping/time keys that match the challenge; no splitter can infer every leakage source automatically. |
 | `features.py` | Extracts catalog attributes such as pack counts, quantities, dimensions, and text statistics; supports fold-aware target-encoding features when fold information is supplied. |
@@ -41,7 +42,7 @@ The pipeline uses the built-in Amazon profile defaults and expects raw CSV files
 | `metrics.py` | Implements common regression/classification metrics (including SMAPE, MAPE, MAE, RMSE, accuracy, and F1); confirm exact conventions and scaling against the official metric. |
 | `__init__.py` | Marks `src` as an importable Python package and exposes package metadata/import behavior. |
 
-The GitHub repository also contains two standalone data-preparation examples, `prepare_amazon_india.py` and `prepare_noisy_airbnb.py`. They are not required by the competition pipeline and may download or derive example datasets; inspect their sources and dataset terms before using them. `tests/` contains automated checks for the components.
+The repository may also contain standalone data-preparation examples; they are not required by the competition pipeline and may download or derive example datasets. Inspect their sources and dataset terms before using them. `tests/` contains automated checks for the components.
 
 ## Important competition hygiene
 

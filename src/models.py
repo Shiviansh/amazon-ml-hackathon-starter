@@ -52,10 +52,12 @@ TREE_ENGINES = frozenset({"lightgbm", "catboost", "xgboost"})
 def smooth_log_smape_objective(
     y_true: np.ndarray, y_pred: np.ndarray
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Exact smooth 1st and 2nd derivatives for log1p-transformed targets under SMAPE.
+    """Smooth pseudo-gradient and positive curvature proxy for log-space SMAPE.
 
-    In log1p space, SMAPE corresponds to tanh(|delta| / 2). The smooth surrogate
-    utilizes soft_sign = tanh(delta / 0.05) and sech2 = 1 - tanh^2(|delta| / 2).
+    This is a training surrogate, not an exact derivative of the official SMAPE.
+    The returned Hessian-like values are a positive curvature heuristic used by
+    second-order tree learners; they are not the mathematical second derivative
+    of the returned gradient. Validate this objective against the official metric.
     """
     delta = y_pred - y_true
     th = np.tanh(np.abs(delta) / 2.0)
@@ -69,7 +71,7 @@ def smooth_log_smape_objective(
 def smooth_raw_smape_objective(
     y_true: np.ndarray, y_pred: np.ndarray
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Smooth 1st and 2nd derivatives for raw-scale targets under SMAPE."""
+    """SMAPE-inspired pseudo-gradient and positive curvature heuristic on raw scale."""
     delta = y_pred - y_true
     denom = np.maximum(1e-4, np.abs(y_pred) + np.abs(y_true))
     soft_abs = np.sqrt(delta ** 2 + 1e-4)
@@ -81,7 +83,7 @@ def smooth_raw_smape_objective(
 def smooth_log_mape_objective(
     y_true: np.ndarray, y_pred: np.ndarray
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Smooth 1st and 2nd derivatives for log1p-transformed targets under MAPE."""
+    """MAPE-inspired pseudo-gradient and positive curvature heuristic in log space."""
     delta = np.clip(y_pred - y_true, -8.0, 8.0)
     exp_delta = np.exp(delta)
     soft_sign = np.tanh(delta / 0.05)
@@ -93,7 +95,7 @@ def smooth_log_mape_objective(
 def smooth_raw_mape_objective(
     y_true: np.ndarray, y_pred: np.ndarray
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Smooth 1st and 2nd derivatives for raw-scale targets under MAPE."""
+    """MAPE-inspired pseudo-gradient and positive curvature heuristic on raw scale."""
     delta = y_pred - y_true
     denom = np.maximum(1e-4, np.abs(y_true))
     soft_sign = np.tanh(delta / 0.05)
