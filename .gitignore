@@ -1,0 +1,33 @@
+# Python bytecode and test caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local environments and credentials
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Challenge data and generated artifacts
+data/
+runs/
+models/
+output/
+predictions/
+submissions/
+logs/
+*.parquet
+*.sqlite3
+*.joblib
+*.pt
+*.pth
+
+# Platform/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

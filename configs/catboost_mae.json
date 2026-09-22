@@ -1,0 +1,14 @@
+{
+  "engine": "catboost",
+  "task": "regression",
+  "learning_rate": 0.03,
+  "max_iterations": 2000,
+  "early_stopping_rounds": 100,
+  "model_params": {
+    "loss_function": "MAE",
+    "eval_metric": "MAE",
+    "depth": 6,
+    "random_strength": 0.1,
+    "l2_leaf_reg": 3.0
+  }
+}
