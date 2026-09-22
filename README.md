@@ -18,15 +18,30 @@ python src/pipeline.py --dataset amazon --device cpu --skip-images --run-dir run
 
 The pipeline uses the built-in Amazon profile defaults and expects raw CSV files under `data/raw/`. You can also provide `--train`, `--test`, and `--sample` paths. Start on CPU and add optional components only after you have a repeatable, leakage-safe validation baseline.
 
-## Repository map
+## What the 18 core `src/` files do
 
-- `src/audit.py`, `src/splits.py`: data checks and split helpers.
-- `src/features.py`, `src/embeddings.py`: structured/text features.
-- `src/train.py`, `src/models.py`: cross-validation training and model interfaces.
-- `src/download_images.py`, `src/ocr.py`, `src/image_embeddings.py`: optional image workflow.
-- `src/ensemble.py`, `src/postprocess.py`: OOF blending and calibration.
-- `src/validate_submit.py`: submission format checks.
-- `tests/`: automated tests; run them locally before relying on changes.
+| File | Competition role |
+|---|---|
+| `pipeline.py` | Runs configured stages in dependency order, caches validated outputs, and finishes with submission validation. |
+| `audit.py` | Profiles schemas, missingness, duplicates, identifiers, target values, and train/test drift; writes diagnostic reports. |
+| `splits.py` | Builds deterministic K-fold, stratified, group-aware, stratified-group, or time-based folds. Choose grouping/time keys that match the challenge; no splitter can infer every leakage source automatically. |
+| `features.py` | Extracts catalog attributes such as pack counts, quantities, dimensions, and text statistics; supports fold-aware target-encoding features when fold information is supplied. |
+| `train.py` | Runs cross-validated training, generates out-of-fold and test predictions, and saves run metadata/artifacts. |
+| `models.py` | Provides a shared interface for supported linear, LightGBM, CatBoost, and XGBoost estimators, with backend/device checks and fold-model serialization. Optional smooth objectives are implementation-specific approximations; verify suitability for the official metric. |
+| `embeddings.py` | Produces optional dense text representations with configurable transformer backends, resumable caching, and a sparse-feature fallback path. The default model choice is not a claim of state-of-the-art performance. |
+| `download_images.py` | Fetches image URLs concurrently with retry/cache handling and a manifest for downstream image processing. |
+| `image_embeddings.py` | Produces cached product-image vectors using supported CLIP/DINOv2 backends and aligns outputs by product ID. |
+| `ocr.py` | Runs available OCR backends on product images and extracts packaging text/quantity candidates as auxiliary features. OCR outputs require quality checks; they are not guaranteed ground truth. |
+| `tune.py` | Runs Optuna hyperparameter trials against the configured fold-based validation objective. Search results are only as reliable as the supplied split and metric. |
+| `ensemble.py` | Fits supported non-negative blending weights from aligned OOF predictions and applies them to corresponding test predictions. |
+| `postprocess.py` | Optionally blends, calibrates prediction scale, and clamps to configured bounds using OOF/validation predictions. Keep calibration inside the validation design. |
+| `validate_submit.py` | Checks submission columns, row counts, IDs/order, missing or non-finite values, and configured value constraints against the sample file. |
+| `predict.py` | Loads saved inference artifacts and produces predictions for new rows using the stored preprocessing/model configuration. |
+| `error_analysis.py` | Summarizes OOF errors and performance slices to help identify failure patterns and bias. |
+| `metrics.py` | Implements common regression/classification metrics (including SMAPE, MAPE, MAE, RMSE, accuracy, and F1); confirm exact conventions and scaling against the official metric. |
+| `__init__.py` | Marks `src` as an importable Python package and exposes package metadata/import behavior. |
+
+The GitHub repository also contains two standalone data-preparation examples, `prepare_amazon_india.py` and `prepare_noisy_airbnb.py`. They are not required by the competition pipeline and may download or derive example datasets; inspect their sources and dataset terms before using them. `tests/` contains automated checks for the components.
 
 ## Important competition hygiene
 
